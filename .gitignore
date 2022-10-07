@@ -16,3 +16,5 @@ proguard/
 *.log
 *.iml
 .gradle
+local.properties
+app/src/main/res/raw/config.json
