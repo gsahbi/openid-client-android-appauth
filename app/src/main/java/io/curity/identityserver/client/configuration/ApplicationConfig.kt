@@ -22,14 +22,18 @@ import android.net.Uri
  * Standard mobile OAuth configuration settings
  */
 class ApplicationConfig {
-    lateinit var issuer: String
+    lateinit var authorizationUri: String
+    lateinit var tokenUri: String
+    lateinit var userinfoUri: String
+    lateinit var logoutUri : String
     lateinit var clientID: String
+    lateinit var clientSecret: String
     lateinit var redirectUri: String
     lateinit var postLogoutRedirectUri: String
     lateinit var scope: String
 
-    fun getIssuerUri(): Uri {
-        return Uri.parse(issuer)
+    fun getauthorizationUri(): Uri {
+        return Uri.parse(authorizationUri)
     }
 
     fun getRedirectUri(): Uri {

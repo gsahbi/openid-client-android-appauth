@@ -19,15 +19,16 @@ package io.curity.identityserver.client
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
-import net.openid.appauth.*
-import net.openid.appauth.AuthorizationServiceConfiguration.fetchFromIssuer
 import io.curity.identityserver.client.configuration.ApplicationConfig
 import io.curity.identityserver.client.errors.GENERIC_ERROR
 import io.curity.identityserver.client.errors.ServerCommunicationException
+import net.openid.appauth.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
+
 
 /*
  * Manage AppAuth integration in one class in order to reduce code in the rest of the app
@@ -39,25 +40,14 @@ class AppAuthHandler(private val config: ApplicationConfig, val context: Context
     /*
      * Get OpenID Connect endpoints
      */
-    suspend fun fetchMetadata(): AuthorizationServiceConfiguration {
+    fun fetchMetadata(): AuthorizationServiceConfiguration {
 
-        return suspendCoroutine { continuation ->
-
-            fetchFromIssuer(this.config.getIssuerUri()) { metadata, ex ->
-
-                when {
-                    metadata != null -> {
-                        Log.i(ContentValues.TAG, "Metadata retrieved successfully")
-                        Log.d(ContentValues.TAG, metadata.toJsonString())
-                        continuation.resume(metadata)
-                    }
-                    else -> {
-                        val error = createAuthorizationError("Metadata Download Error", ex)
-                        continuation.resumeWithException(error)
-                    }
-                }
-            }
-        }
+        return  AuthorizationServiceConfiguration(
+            Uri.parse(this.config.authorizationUri), // authorization endpoint
+            Uri.parse(this.config.tokenUri), // token endpoint
+            null,
+            Uri.parse(this.config.logoutUri) // logout endpoint
+        );
     }
 
     /*
@@ -107,8 +97,9 @@ class AppAuthHandler(private val config: ApplicationConfig, val context: Context
 
             val extraParams = mutableMapOf<String, String>()
             val tokenRequest = authResponse.createTokenExchangeRequest(extraParams)
+            val clientAuth: ClientAuthentication = ClientSecretBasic(this.config.clientSecret)
 
-            authService.performTokenRequest(tokenRequest) { tokenResponse, ex ->
+            authService.performTokenRequest(tokenRequest, clientAuth) { tokenResponse, ex ->
 
                 when {
                     tokenResponse != null -> {
