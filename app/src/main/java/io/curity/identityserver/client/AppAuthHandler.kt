@@ -132,7 +132,9 @@ class AppAuthHandler(private val config: ApplicationConfig, val context: Context
                 .setAdditionalParameters(extraParams)
                 .build()
 
-            authService.performTokenRequest(tokenRequest) { tokenResponse, ex ->
+            val clientAuth: ClientAuthentication = ClientSecretBasic(this.config.clientSecret)
+
+            authService.performTokenRequest(tokenRequest, clientAuth) { tokenResponse, ex ->
 
                 when {
                     tokenResponse != null -> {
